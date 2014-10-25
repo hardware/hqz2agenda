@@ -1,0 +1,9 @@
+node_modules
+bower
+build
+files/*.xls
+
+*~
+*.log
+*.env
+*.migrate

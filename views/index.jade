@@ -1,0 +1,12 @@
+extends layout
+
+block content
+
+    div(class='bs-callout bs-callout-info')
+        h4 Hqz2agenda
+        p
+            | Application permettant de convertir un planning Horoquartz en fichier CSV.<br>
+            | Déposez votre fichier <strong>xlsx</strong> dans la zone ci-dessous :
+
+    div(id='dropzone')
+        form(action='/upload' class='dropzone dz-clickable' id='file-dropzone')
