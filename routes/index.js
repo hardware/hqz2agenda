@@ -107,9 +107,22 @@ var genCSVFile = function( path, num, req, res, next ) {
 
         var days = data[0];
         var hours = data[1];
+
+        if( days.length != hours.length ) {
+            errorHandler('Le nombre de colonnes correspondantes est invalide. ( ' + days.length + ' / ' + hours.length + ' )', path, res);
+            return;
+        }
+
         var daysSorted  = [];
         var hoursSorted = [];
+
         var year = S(days[0]).left(4).s;
+
+        if( year.length != 4 || S( year ).isNumeric() === false ) {
+            errorHandler('Année invalide (' + year + ')', path, res);
+            return;
+        }
+
         var month = S(days[0]).chompLeft(year + ' ').s;
 
         switch( month ) {

@@ -29,9 +29,7 @@ body {
 }
 
 .footer {
-  padding-top: 19px;
   color: #777;
-  border-top: 1px solid #e5e5e5;
 }
 
 pre {
@@ -42,9 +40,9 @@ pre {
 }
 
 /* Customize container */
-@media (min-width: 768px) {
+@media (min-width: 800px) {
   .container {
-    max-width: 685px;
+    max-width: 800px;
   }
 }
 .container-narrow > hr {
@@ -488,7 +486,7 @@ pre {
   }
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 800px) {
   .header,
   .footer {
     padding-right: 0;
@@ -497,5 +495,11 @@ pre {
 
   .header {
     margin-bottom: 30px;
+  }
+}
+
+@media screen and (max-width: 988px) {
+  .planning-example {
+    display: none;
   }
 }
