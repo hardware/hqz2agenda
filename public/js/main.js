@@ -10,8 +10,15 @@ Dropzone.options.fileDropzone = {
     },
 
     init: function() {
-        this.on("success", function( file, url ) {
-            window.location.replace( url );
+        this.on("success", function( file, resp ) {
+            if( ! resp.error && resp.url )
+                window.location.replace( resp.url );
+            else
+                alert( resp.error );
+        });
+
+        this.on("error", function( file, resp ) {
+            if( resp.error ) alert( resp.error );
         });
     }
 };

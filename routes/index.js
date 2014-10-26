@@ -30,12 +30,17 @@ exports.upload = function( req, res, next ) {
     data.settings(req, res, {}, function( settings ) {
         fs.readFile(req.files.file.path, function( err, buffer ) {
 
+            errorHandler( err, null, res );
+
             var num = ( Math.floor(Math.random() * (999999999 - 99999999) + 99999999) );
-            var fileName = 'planning-' + num + '.xslx';
+            var fileName = 'planning-' + num;
             var path = res.locals.filesPath + fileName;
 
-            fs.writeFile(path, buffer, function( err ) {
+            fs.writeFile(path + '.xlsx', buffer, function( err ) {
+
+                errorHandler( err, path, res );
                 genCSVFile( path, num, req, res, next );
+
             });
 
         });
@@ -55,20 +60,50 @@ exports.download = function( req, res, next ) {
         var path = res.locals.filesPath + 'planning-' + req.params.num;
 
         res.download(path + '.csv', 'planning.csv', function( err ) {
-            if( err ) { next( err ); return; }
+
+            errorHandler( err, null, res );
+
             fs.unlinkSync(path + '.csv');
-            fs.unlinkSync(path + '.xslx');
+            fs.unlinkSync(path + '.xlsx');
+
         });
 
     });
 
 };
 
-var genCSVFile = function( file, num, req, res, next ) {
+var errorHandler = function( err, path, res ) {
 
-    parseXlsx(file, function( err, data ) {
+    if( err ) {
 
-        if( err ) { next( err ); return; }
+        // Suppression des fichiers temporaires
+        if( path ) removeTmpFiles( path );
+
+        res.status( 500 );
+        res.json({ error:err });
+        return;
+
+    }
+
+};
+
+var removeTmpFiles = function( path ) {
+
+    // Suppression du fichier CSV
+    if( fs.existsSync(path + '.csv') )
+        fs.unlinkSync(path + '.csv');
+
+    // Suppression du fichier XLSX
+    if( fs.existsSync(path + '.xlsx') )
+        fs.unlinkSync(path + '.xlsx');
+
+};
+
+var genCSVFile = function( path, num, req, res, next ) {
+
+    parseXlsx(path + '.xlsx', function( err, data ) {
+
+        errorHandler( err, path, res );
 
         var days = data[0];
         var hours = data[1];
@@ -91,7 +126,7 @@ var genCSVFile = function( file, num, req, res, next ) {
             case 'Novembre' : month = '11'; break;
             case 'Decembre' : month = '12'; break;
             default:
-                next( new Error("FATAL: Valeur inconnue pour le mois en cours.") );
+                errorHandler('Valeur inconnue pour le mois en cours.', path, res);
                 return;
         }
 
@@ -139,12 +174,11 @@ var genCSVFile = function( file, num, req, res, next ) {
         delete req.session.prevVal;
         i = 0;
 
-        var fileName = 'planning-' + num + '.csv';
         var header = 'Subject,Start Date,Start Time,End Date,End Time,All day event,Description,Location,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,';
 
-        fs.appendFile(res.locals.filesPath + fileName, header, function( err ) {
+        fs.appendFile(path + '.csv', header, function( err ) {
 
-            if( err ) { next( err ); return; }
+            errorHandler( err, path, res );
 
             async.eachSeries(daysSorted, function( day, nextDay ) {
 
@@ -181,12 +215,11 @@ var genCSVFile = function( file, num, req, res, next ) {
                         Location='';
                         break;
                     default:
-                        next( new Error("FATAL: Horaire inconnu ! Valeurs possibles : M / S / RTT") );
+                        errorHandler('Horaire inconnu. Valeurs possibles : M / S / (:)RTT', path, res);
                         return;
                 }
 
                 var date = day + '/' + month + '/' + year;
-
                 var line = S([Subject,date,StartTime,date,EndTime,AllDayEvent,Subject,Location]).toCSV({
                     delimiter: ',',
                     qualifier: ' ',
@@ -194,9 +227,9 @@ var genCSVFile = function( file, num, req, res, next ) {
                     encloseNumbers: false
                 }).s.replace(/ /g,'');
 
-                fs.appendFile(res.locals.filesPath + fileName, '\r\n'+line, function( err ) {
+                fs.appendFile(path + '.csv', '\r\n'+line, function( err ) {
 
-                    if( err ) { next( err ); return; }
+                    errorHandler( err, path, res );
 
                     i++;
                     nextDay();
@@ -204,10 +237,13 @@ var genCSVFile = function( file, num, req, res, next ) {
                 });
             }, function( err ) {
 
-                if( err ) { next( err ); return; }
+                errorHandler( err, path, res );
 
                 var url = process.env.APP_URL + 'download/' + num;
-                res.send( url );
+
+                res.status( 200 );
+                res.json({ url:url, error:null });
+
             });
         });
     });
