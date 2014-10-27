@@ -62,9 +62,6 @@ exports.download = function( req, res, next ) {
         res.download(path + '.csv', 'planning.csv', function( err ) {
 
             errorHandler( err, null, res );
-
-            if( fs.existsSync(path + '.csv') )
-                fs.unlinkSync(path + '.csv');
                 
             if( fs.existsSync(path + '.xlsx') )
                 fs.unlinkSync(path + '.xlsx');
