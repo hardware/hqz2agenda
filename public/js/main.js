@@ -12,7 +12,8 @@ Dropzone.options.fileDropzone = {
     init: function() {
         this.on("success", function( file, resp ) {
             if( ! resp.error && resp.url )
-                window.location.replace( resp.url );
+                // window.location.replace( resp.url );
+                window.location.href = resp.url;
             else
                 alert( resp.error );
         });
