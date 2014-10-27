@@ -63,8 +63,11 @@ exports.download = function( req, res, next ) {
 
             errorHandler( err, null, res );
 
-            fs.unlinkSync(path + '.csv');
-            fs.unlinkSync(path + '.xlsx');
+            if( fs.existsSync(path + '.csv') )
+                fs.unlinkSync(path + '.csv');
+                
+            if( fs.existsSync(path + '.xlsx') )
+                fs.unlinkSync(path + '.xlsx');
 
         });
 
