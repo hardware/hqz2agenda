@@ -206,7 +206,21 @@ var genCSVFile = function( path, num, req, res, next ) {
                         AllDayEvent = 'False';
                         Location='AIToulouse';
                         break;
+                    case ':M':
+                        Subject = 'Matin';
+                        StartTime = '07:00';
+                        EndTime = '16:00';
+                        AllDayEvent = 'False';
+                        Location='AIToulouse';
+                        break;
                     case 'S':
+                        Subject = 'Soir';
+                        StartTime = '10:00';
+                        EndTime = '19:00';
+                        AllDayEvent = 'False';
+                        Location='AIToulouse';
+                        break;
+                    case ':S':
                         Subject = 'Soir';
                         StartTime = '10:00';
                         EndTime = '19:00';
@@ -228,7 +242,7 @@ var genCSVFile = function( path, num, req, res, next ) {
                         Location='';
                         break;
                     default:
-                        errorHandler('Horaire inconnu. Valeurs possibles : M / S / (:)RTT', path, res);
+                        errorHandler('Horaire inconnu. Valeurs possibles : (:)M / (:)S / (:)RTT', path, res);
                         return;
                 }
 
