@@ -284,12 +284,12 @@ var genCSVFile = function( path, num, req, res, next ) {
                         DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000 \r\n \
                         DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000 \r\n \
                         LOCATION:AIToulouse \r\n \
-                        END:VEVENT \r\n";
+                        END:VEVENT";
                         vevent = String( vevent ).replace(/ /g,'');
                         break;
                 }
 
-                fs.appendFile(path + req.session.extension, vevent, function( err ) {
+                fs.appendFile(path + req.session.extension, vevent + "\r\n", function( err ) {
 
                     errorHandler( err, path, res );
 
