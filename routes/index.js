@@ -281,8 +281,8 @@ var genCSVFile = function( path, num, req, res, next ) {
                         var vevent = "BEGIN:VEVENT \r\n \
                         SUMMARY:" + Subject + " \r\n \
                         DESCRIPTION:" + Subject + " \r\n \
-                        DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000z \r\n \
-                        DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000z \r\n \
+                        DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000 \r\n \
+                        DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000 \r\n \
                         LOCATION:AIToulouse \r\n \
                         END:VEVENT \r\n";
                         vevent = String( vevent ).replace(/ /g,'');
