@@ -13,6 +13,16 @@ exports.index = function( req, res, next ) {
 
     data.settings(req, res, {}, function( settings ) {
 
+        if( ! req.query.type )
+            req.session.type = 'google';
+        else
+            req.session.type = req.query.type;
+
+        switch( req.session.type ) {
+            case 'google' : req.session.extension = '.csv'; break;
+            case 'outlook': req.session.extension = '.ics'; break;
+        }
+
         settings.title += "Accueil";
         res.render('index', settings);
 
@@ -59,10 +69,10 @@ exports.download = function( req, res, next ) {
 
         var path = res.locals.filesPath + 'planning-' + req.params.num;
 
-        res.download(path + '.csv', 'planning.csv', function( err ) {
+        res.download(path + req.session.extension, 'planning' + req.session.extension, function( err ) {
 
             errorHandler( err, null, res );
-                
+
             if( fs.existsSync(path + '.xlsx') )
                 fs.unlinkSync(path + '.xlsx');
 
@@ -89,9 +99,9 @@ var errorHandler = function( err, path, res ) {
 
 var removeTmpFiles = function( path ) {
 
-    // Suppression du fichier CSV
-    if( fs.existsSync(path + '.csv') )
-        fs.unlinkSync(path + '.csv');
+    // Suppression du fichier CSV/ICS
+    if( fs.existsSync(path + req.session.extension) )
+        fs.unlinkSync(path + req.session.extension);
 
     // Suppression du fichier XLSX
     if( fs.existsSync(path + '.xlsx') )
@@ -187,16 +197,25 @@ var genCSVFile = function( path, num, req, res, next ) {
         delete req.session.prevVal;
         i = 0;
 
-        var header = 'Subject,Start Date,Start Time,End Date,End Time,All day event,Description,Location,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,';
+        switch( req.session.type ) {
+            case 'google':
+                var header = "Subject,Start Date,Start Time,End Date,End Time,All day event,Description,Location,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, \r\n";
+                break;
 
-        fs.appendFile(path + '.csv', header, function( err ) {
+            case 'outlook':
+                var header = "BEGIN:VCALENDAR \r\n     \
+                VERSION:2.0 \r\n                       \
+                PRODID:-//Horoquartz2calendar//EN \r\n \
+                CALSCALE:GREGORIAN \r\n                \
+                X-WR-CALNAME;VALUE=TEXT:planning \r\n";
+                break;
+        }
+
+        fs.appendFile(path + req.session.extension, header, function( err ) {
 
             errorHandler( err, path, res );
 
             async.eachSeries(daysSorted, function( day, nextDay ) {
-
-                // Subject, Start Date, Start Time, End Date, End Time, All day event, Description, Location
-                // Matin,11/03/14,07:00,11/03/14,16:00,False,Matin,AIT
 
                 switch( hoursSorted[i] ) {
                     case 'M':
@@ -246,15 +265,29 @@ var genCSVFile = function( path, num, req, res, next ) {
                         return;
                 }
 
-                var date = day + '/' + month + '/' + year;
-                var line = S([Subject,date,StartTime,date,EndTime,AllDayEvent,Subject,Location]).toCSV({
-                    delimiter: ',',
-                    qualifier: ' ',
-                    escape: '\\',
-                    encloseNumbers: false
-                }).s.replace(/ /g,'');
+                switch( req.session.type ) {
+                    case 'google':
+                        var date = day + '/' + month + '/' + year;
+                        var vevent = S([Subject,date,StartTime,date,EndTime,AllDayEvent,Subject,Location]).toCSV({
+                            delimiter: ',',
+                            qualifier: ' ',
+                            escape: '\\',
+                            encloseNumbers: false
+                        }).s.replace(/ /g,'');
+                        break;
 
-                fs.appendFile(path + '.csv', '\r\n'+line, function( err ) {
+                    case 'outlook':
+                        var vevent = "BEGIN:VEVENT \r\n \
+                        SUMMARY:" + Subject + " \r\n \
+                        DESCRIPTION:" + Subject + " \r\n \
+                        DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000z \r\n \
+                        DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000z \r\n \
+                        LOCATION:AIToulouse \r\n \
+                        END:VEVENT \r\n";
+                        break;
+                }
+
+                fs.appendFile(path + req.session.extension, vevent, function( err ) {
 
                     errorHandler( err, path, res );
 
@@ -266,11 +299,21 @@ var genCSVFile = function( path, num, req, res, next ) {
 
                 errorHandler( err, path, res );
 
-                var url = process.env.APP_URL + 'download/' + num;
+                switch( req.session.type ) {
+                    case 'google' : var bottom = ''; break;
+                    case 'outlook': var bottom = 'END:VCALENDAR'; break;
+                }
 
-                res.status( 200 );
-                res.json({ url:url, error:null });
+                fs.appendFile(path + req.session.extension, bottom, function( err ) {
 
+                    errorHandler( err, path, res );
+
+                    var url = process.env.APP_URL + 'download/' + num;
+
+                    res.status( 200 );
+                    res.json({ url:url, error:null });
+
+                });
             });
         });
     });
