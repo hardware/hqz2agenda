@@ -23,7 +23,9 @@ exports.index = function( req, res, next ) {
             case 'outlook': req.session.extension = '.ics'; break;
         }
 
-        settings.title += "Accueil";
+        settings.title       += "Accueil";
+        settings.selectedType = req.session.type;
+
         res.render('index', settings);
 
     });

@@ -13,8 +13,8 @@ block content
         form(action='/' method='get' class='form-inline' role='form')
             .form-group
                 select(class='form-control' onchange="if(this.value) window.location.href=this.value")
-                    option(value='?type=google') Google Agenda (.csv)
-                    option(value='?type=outlook') Outlook (.ics)
+                    option(value='?type=google' selected=selectedType == 'google') Google Agenda (.csv)
+                    option(value='?type=outlook' selected=selectedType == 'outlook') Outlook (.ics)
 
     div(id='dropzone')
         form(action='/upload' class='dropzone dz-clickable' id='file-dropzone')
