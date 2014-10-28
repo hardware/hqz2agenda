@@ -8,6 +8,14 @@ block content
             | Application permettant de convertir un planning Horoquartz en fichier CSV compatible avec Google Agenda.
             | Déposez votre fichier <strong>xlsx</strong> dans la zone ci-dessous :
 
+        p Choisir le type d'agenda :
+
+        form(action='/' method='get' class='form-inline' role='form')
+            .form-group
+                select(class='form-control' onchange="if(this.value) window.location.href=this.value")
+                    option(value='?type=google') Google Agenda (.csv)
+                    option(value='?type=outlook') Outlook (.ics)
+
     div(id='dropzone')
         form(action='/upload' class='dropzone dz-clickable' id='file-dropzone')
 
