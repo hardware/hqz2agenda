@@ -208,7 +208,7 @@ var genCSVFile = function( path, num, req, res, next ) {
                 PRODID:-//Horoquartz2calendar//EN \r\n \
                 CALSCALE:GREGORIAN \r\n                \
                 X-WR-CALNAME;VALUE=TEXT:planning \r\n";
-                header = String( header ).replace('\t','');
+                header = String( header ).replace(/^\s+|\s+$/g, '');
                 break;
         }
 
@@ -285,7 +285,7 @@ var genCSVFile = function( path, num, req, res, next ) {
                         DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000z \r\n \
                         LOCATION:AIToulouse \r\n \
                         END:VEVENT \r\n";
-                        vevent = String( vevent ).replace('\t','');
+                        vevent = String( vevent ).replace(/^\s+|\s+$/g, '');
                         break;
                 }
 
