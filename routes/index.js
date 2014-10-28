@@ -204,10 +204,11 @@ var genCSVFile = function( path, num, req, res, next ) {
 
             case 'outlook':
                 var header = "BEGIN:VCALENDAR \r\n     \
-VERSION:2.0 \r\n                       \
-PRODID:-//Horoquartz2calendar//EN \r\n \
-CALSCALE:GREGORIAN \r\n                \
-X-WR-CALNAME;VALUE=TEXT:planning \r\n";
+                VERSION:2.0 \r\n                       \
+                PRODID:-//Horoquartz2calendar//EN \r\n \
+                CALSCALE:GREGORIAN \r\n                \
+                X-WR-CALNAME;VALUE=TEXT:planning \r\n";
+                header = String( header ).replace(/ /g,'');
                 break;
         }
 
@@ -278,12 +279,13 @@ X-WR-CALNAME;VALUE=TEXT:planning \r\n";
 
                     case 'outlook':
                         var vevent = "BEGIN:VEVENT \r\n \
-SUMMARY:" + Subject + " \r\n \
-DESCRIPTION:" + Subject + " \r\n \
-DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000z \r\n \
-DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000z \r\n \
-LOCATION:AIToulouse \r\n \
-END:VEVENT \r\n";
+                        SUMMARY:" + Subject + " \r\n \
+                        DESCRIPTION:" + Subject + " \r\n \
+                        DTSTART:" + year + month + day + "T" + S(StartTime).left(2).s + "0000z \r\n \
+                        DTEND:" + year + month + day + "T" + S(EndTime).left(2).s + "0000z \r\n \
+                        LOCATION:AIToulouse \r\n \
+                        END:VEVENT \r\n";
+                        vevent = String( vevent ).replace(/ /g,'');
                         break;
                 }
 
