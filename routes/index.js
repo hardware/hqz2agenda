@@ -42,7 +42,7 @@ exports.upload = function( req, res, next ) {
     data.settings(req, res, {}, function( settings ) {
         fs.readFile(req.files.file.path, function( err, buffer ) {
 
-            errorHandler( err, null, res );
+            errorHandler( err, null, req, res );
 
             var num = ( Math.floor(Math.random() * (999999999 - 99999999) + 99999999) );
             var fileName = 'planning-' + num;
@@ -50,7 +50,7 @@ exports.upload = function( req, res, next ) {
 
             fs.writeFile(path + '.xlsx', buffer, function( err ) {
 
-                errorHandler( err, path, res );
+                errorHandler( err, path, req, res );
                 genCSVFile( path, num, req, res, next );
 
             });
@@ -73,7 +73,7 @@ exports.download = function( req, res, next ) {
 
         res.download(path + req.session.extension, 'planning' + req.session.extension, function( err ) {
 
-            errorHandler( err, null, res );
+            errorHandler( err, null, res, req, res );
 
             if( fs.existsSync(path + '.xlsx') )
                 fs.unlinkSync(path + '.xlsx');
@@ -84,12 +84,12 @@ exports.download = function( req, res, next ) {
 
 };
 
-var errorHandler = function( err, path, res ) {
+var errorHandler = function( err, path, req, res ) {
 
     if( err ) {
 
         // Suppression des fichiers temporaires
-        if( path ) removeTmpFiles( path );
+        if( path ) removeTmpFiles( path, req );
 
         res.status( 500 );
         res.json({ error:err });
@@ -99,7 +99,7 @@ var errorHandler = function( err, path, res ) {
 
 };
 
-var removeTmpFiles = function( path ) {
+var removeTmpFiles = function( path, req ) {
 
     // Suppression du fichier CSV/ICS
     if( fs.existsSync(path + req.session.extension) )
@@ -115,13 +115,13 @@ var genCSVFile = function( path, num, req, res, next ) {
 
     parseXlsx(path + '.xlsx', function( err, data ) {
 
-        errorHandler( err, path, res );
+        errorHandler( err, path, req, res );
 
         var days = data[0];
         var hours = data[1];
 
         if( days.length != hours.length ) {
-            errorHandler('Le nombre de colonnes correspondantes est invalide. ( ' + days.length + ' / ' + hours.length + ' )', path, res);
+            errorHandler('Le nombre de colonnes correspondantes est invalide. ( ' + days.length + ' / ' + hours.length + ' )', path, req, res);
             return;
         }
 
@@ -131,7 +131,7 @@ var genCSVFile = function( path, num, req, res, next ) {
         var year = S(days[0]).left(4).s;
 
         if( year.length != 4 || S( year ).isNumeric() === false ) {
-            errorHandler('Année invalide (' + year + ')', path, res);
+            errorHandler('Année invalide (' + year + ')', path, req, res);
             return;
         }
 
@@ -151,7 +151,7 @@ var genCSVFile = function( path, num, req, res, next ) {
             case 'Novembre' : month = '11'; break;
             case 'Décembre' : month = '12'; break;
             default:
-                errorHandler('Valeur inconnue pour le mois en cours.', path, res);
+                errorHandler('Valeur inconnue pour le mois en cours.', path, req, res);
                 return;
         }
 
@@ -216,7 +216,7 @@ var genCSVFile = function( path, num, req, res, next ) {
 
         fs.appendFile(path + req.session.extension, header, function( err ) {
 
-            errorHandler( err, path, res );
+            errorHandler( err, path, req, res );
 
             async.eachSeries(daysSorted, function( day, nextDay ) {
 
@@ -264,7 +264,7 @@ var genCSVFile = function( path, num, req, res, next ) {
                         Location='';
                         break;
                     default:
-                        errorHandler('Horaire inconnu. Valeurs possibles : (:)M / (:)S / (:)RTT', path, res);
+                        errorHandler('Horaire inconnu. Valeurs possibles : (:)M / (:)S / (:)RTT', path, req, res);
                         return;
                 }
 
@@ -293,7 +293,7 @@ var genCSVFile = function( path, num, req, res, next ) {
 
                 fs.appendFile(path + req.session.extension, vevent + "\r\n", function( err ) {
 
-                    errorHandler( err, path, res );
+                    errorHandler( err, path, req, res );
 
                     i++;
                     nextDay();
@@ -301,7 +301,7 @@ var genCSVFile = function( path, num, req, res, next ) {
                 });
             }, function( err ) {
 
-                errorHandler( err, path, res );
+                errorHandler( err, path, req, res );
 
                 switch( req.session.type ) {
                     case 'google' : var bottom = ''; break;
@@ -310,7 +310,7 @@ var genCSVFile = function( path, num, req, res, next ) {
 
                 fs.appendFile(path + req.session.extension, bottom, function( err ) {
 
-                    errorHandler( err, path, res );
+                    errorHandler( err, path, req, res );
 
                     var url = process.env.APP_URL + 'download/' + num;
 
